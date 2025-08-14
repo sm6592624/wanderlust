@@ -3,6 +3,7 @@ import Navbar from 'react-bootstrap/Navbar'
 import Nav from 'react-bootstrap/Nav'
 import { Link } from 'react-router-dom'
 import Container from 'react-bootstrap/Container'
+// Material UI icons for better UX
 import PhoneIcon from '@material-ui/icons/Phone'
 import ContactlessIcon from '@material-ui/icons/Contactless'
 import LocationOnIcon from '@material-ui/icons/LocationOn'
@@ -15,10 +16,28 @@ import './Header.css'
 import UserModal from '../UserModal'
 import { UserContext } from '../../utils/Context/user'
 
+// Main navigation header component
+const Header = ({ isModalOpen, setIsModalOpen }) => {
+    const currentUser = useContext(UserContext)
+    // Helper function to get user's first letter for avatar
+    const getUserInitial = () => {
+        if (currentUser.user && currentUser.user.firstName) {
+            return currentUser.user.firstName.charAt(0).toUpperCase()
+        }
+        return '?'
+    }
 
-function Header({ isModalOpen, setIsModalOpen }) {
-    const userContext = useContext(UserContext)
-    
+    // Handle user logout
+    const handleLogout = () => {
+        if (currentUser && currentUser.userLogout) {
+            currentUser.userLogout()
+        }
+    }
+
+    // Show login modal
+    const showLoginModal = () => {
+        setIsModalOpen(true)
+    }
 
     return (
         <>
@@ -33,17 +52,17 @@ function Header({ isModalOpen, setIsModalOpen }) {
                         
                         <div className="header__topRight">
                             {
-                                userContext.user ? (
+                                currentUser.user ? (
                                     <>
                                         <span className="header__topUserName">
-                                            Hello, {userContext.user.firstName.toLowerCase()}
-                                            <Avatar>{userContext.user.firstName.slice(0,1)}</Avatar>
+                                            Hello, {currentUser.user.firstName.toLowerCase()}
+                                            <Avatar>{getUserInitial()}</Avatar>
                                         </span>
-                                        <span onClick={() => userContext.userLogout()}>Logout <PowerSettingsNewIcon /></span>
+                                        <span onClick={handleLogout}>Logout <PowerSettingsNewIcon /></span>
                                     </>
                                 ) : (
                                     <>
-                                        <span onClick={() => setIsModalOpen(true)}>User <PersonIcon /></span>
+                                        <span onClick={showLoginModal}>User <PersonIcon /></span>
                                         <span><Link to="/admin">Admin <SettingsIcon /></Link></span>
                                     </>
                                 )
@@ -62,16 +81,24 @@ function Header({ isModalOpen, setIsModalOpen }) {
                                 </Nav.Link>
                             </Nav.Item>
                             <Nav.Item>
-                                <Nav.Link as={Link} to="/user/treks" eventKey="treks">Treks</Nav.Link>
+                                <Nav.Link as={Link} to="/user/treks" eventKey="treks">
+                                    Treks
+                                </Nav.Link>
                             </Nav.Item>
                             <Nav.Item>
-                                <Nav.Link as={Link} to="/user/camps" eventKey="camps">Camps</Nav.Link>
+                                <Nav.Link as={Link} to="/user/camps" eventKey="camps">
+                                    Camps
+                                </Nav.Link>
                             </Nav.Item>
                             <Nav.Item>
-                                <Nav.Link as={Link} to="/user/packages" eventKey="packages">Packages</Nav.Link>
+                                <Nav.Link as={Link} to="/user/packages" eventKey="packages">
+                                    Packages
+                                </Nav.Link>
                             </Nav.Item>
                             <Nav.Item>
-                                <Nav.Link as={Link} to="/user/bookings" eventKey="bookings">My Bookings</Nav.Link>
+                                <Nav.Link as={Link} to="/user/bookings" eventKey="bookings">
+                                    My Bookings
+                                </Nav.Link>
                             </Nav.Item>
                         </Nav>
                     </Navbar.Collapse>

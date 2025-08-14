@@ -1,9 +1,11 @@
+/* Header component styles - main navigation */
 .header {
     display: flex;
     flex-direction: column;
     padding-bottom: 20px;
 }
 
+/* Top section with contact info and user controls */
 .header__top {
     width: 100%;
     display: flex;
@@ -21,13 +23,14 @@
 
 .header__top span:hover {
     cursor: pointer;
-    color: #dc3545;
+    color: #dc3545; /* Brand red color */
 }
 
 .header__topRight {
     display: flex;
 }
 
+/* User name section with avatar */
 .header__topUserName {
     text-transform: capitalize;
     display: flex;
@@ -55,6 +58,7 @@
     color: #dc3545;
 }
 
+/* Navigation pills styling */
 .header .nav-pills {
     margin-left: auto;
 }
@@ -64,6 +68,7 @@
     font-size: 1.5rem;
 }
 
+/* Navigation link styles with shadow effects */
 .header .nav-link {
     background-color: rgba(0, 0, 0, 0.376);
     color: #fff !important;
@@ -71,7 +76,7 @@
     padding: 10px 25px !important;
     margin: 0 10px !important;
     font-weight: 700;
-    box-shadow: 3px 3px 5px #000, -3px 3px 5px #000;
+    box-shadow: 3px 3px 5px #000, -3px 3px 5px #000; /* Cool shadow effect */
 }
 
 .header .nav-link.active {

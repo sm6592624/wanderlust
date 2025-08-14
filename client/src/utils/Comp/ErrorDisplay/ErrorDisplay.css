@@ -1,0 +1,40 @@
+.error-display {
+  padding: 2rem;
+  margin: 1rem 0;
+  text-align: center;
+  border-radius: 8px;
+  background-color: #fafafa;
+  border: 1px solid #e0e0e0;
+}
+
+.error-display--fullpage {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 300px;
+  max-width: 500px;
+  z-index: 1000;
+}
+
+.error-display__icon {
+  margin-bottom: 1rem;
+}
+
+.error-display__message {
+  margin-bottom: 1rem;
+  color: #666;
+}
+
+@media (max-width: 768px) {
+  .error-display {
+    padding: 1rem;
+    margin: 0.5rem;
+  }
+  
+  .error-display--fullpage {
+    margin: 1rem;
+    min-width: auto;
+    max-width: 90vw;
+  }
+}

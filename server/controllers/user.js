@@ -2,9 +2,12 @@ require('dotenv').config({ path: '../.env' })
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 
+// Model imports
 const User = require('../models/User')
 const Booking = require('../models/Booking')
 const Enquiry = require('../models/Enquiry')
+
+// Utility imports
 const {
     validateRegisterInputs,
     validateLoginInputs,
@@ -13,9 +16,11 @@ const {
 } = require('../utils/validators')
 const { validateUserRequest } = require('../utils/checkAuth')
 
+// User registration handler
 const registerUser = async (req, res) => {
     const { firstName, lastName, email, password, confirmPassword } = req.body
 
+    // Validate input data
     const { valid, errors } = validateRegisterInputs(
         firstName,
         lastName,
@@ -24,19 +29,25 @@ const registerUser = async (req, res) => {
         confirmPassword
     )
 
-    if (!valid) return res.status(400).send({ errors })
+    if (!valid) {
+        return res.status(400).send({ errors })
+    }
 
     try {
-        const foundUser = await User.findOne({ email })
-        if (foundUser)
+        // Check if user already exists
+        const existingUser = await User.findOne({ email })
+        if (existingUser) {
             return res.status(400).send({
                 errors: {
-                    email: 'Email address already exists!!! Proceed to Login.',
+                    email: 'Email address already exists! Please proceed to login.',
                 },
             })
+        }
 
+        // Hash password for security
         const hashedPassword = await bcrypt.hash(password, 13)
 
+        // Create new user
         const newUser = new User({
             firstName,
             lastName,
@@ -46,7 +57,7 @@ const registerUser = async (req, res) => {
 
         await newUser.save()
         return res.status(200).send({
-            message: 'User registered successfully! Proceed to Login.',
+            message: 'User registered successfully! You can now login.',
         })
     } catch (err) {
         return res.status(500).send(err)

@@ -1,74 +1,107 @@
-import React, { useContext, useEffect, useState } from 'react'
-import Button from '@material-ui/core/Button'
-import Typography from '@material-ui/core/Typography'
-import Container from 'react-bootstrap/Container'
-import _ from 'lodash'
+import React, { useContext, useEffect, useState, useCallback } from 'react';
+import { Button, Typography, Container } from '@material-ui/core';
+import _ from 'lodash';
 
-import './Bookings.css'
-import { UserContext } from '../../utils/Context/user'
-import { getBookings } from '../../api/user'
-import BookingCard from './BookingCard'
-import Loading from '../../utils/Comp/Loading'
-import AdvtBanner from '../../utils/Comp/AdvtBanner'
+import './Bookings.css';
+import { UserContext } from '../../utils/Context/user';
+import { getBookings } from '../../api/user';
+import BookingCard from './BookingCard';
+import Loading from '../../utils/Comp/Loading';
+import ErrorDisplay from '../../utils/Comp/ErrorDisplay';
+import AdvtBanner from '../../utils/Comp/AdvtBanner';
 
-function Bookings({ setIsModalOpen, advtData }) {
-    const userContext = useContext(UserContext)
-    const [bookings, setBookings] = useState([])
-    const [deletedBookingID, setDeletedBookingID] = useState('')
-    const [loading, setLoading] = useState(true)
+const Bookings = ({ setIsModalOpen, advtData }) => {
+    const user = useContext(UserContext);
+    const [bookings, setBookings] = useState([]);
+    const [deletedBookingID, setDeletedBookingID] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    const fetchBookings = async (loggedInUser) => {
-        let response = await getBookings(loggedInUser)
-        setBookings(response.data)
-    }
-
-    useEffect(() => {
-        if (!userContext.user) setIsModalOpen(true)
-        else {
-            fetchBookings(userContext.user)
-                .then(() => setLoading(false))
-                .catch((err) => console.log(err.response.data.error))
+    // Load user bookings from API
+    const loadUserBookings = useCallback(async (currentUser) => {
+        if (!currentUser) return;
+        
+        try {
+            setLoading(true);
+            setError(null);
+            const result = await getBookings(currentUser);
+            if (result && result.data) {
+                setBookings(result.data);
+            } else {
+                setBookings([]);
+            }
+        } catch (err) {
+            console.error('Bookings fetch error:', err);
+            setError(err.message || 'Could not load your bookings');
+        } finally {
+            setLoading(false);
         }
-    }, [userContext.user, setIsModalOpen])
+    }, []);
+
+    // Retry loading bookings
+    const retryLoadBookings = useCallback(() => {
+        if (user.user) {
+            loadUserBookings(user.user);
+        }
+    }, [user.user, loadUserBookings]);
 
     useEffect(() => {
-        if (deletedBookingID)
+        if (!user.user) {
+            setIsModalOpen(true);
+            setLoading(false);
+        } else {
+            loadUserBookings(user.user);
+        }
+    }, [user.user, setIsModalOpen, loadUserBookings]);
+
+    useEffect(() => {
+        if (deletedBookingID) {
             setBookings((prevBookings) =>
                 prevBookings.filter((booking) => booking._id !== deletedBookingID)
-            )
-    }, [deletedBookingID])
+            );
+        }
+    }, [deletedBookingID]);
 
     return (
         <div className="bookings">
             <div className="bookings__header">
                 <h1>My Bookings</h1>
             </div>
-            {userContext.user ? (
+            
+            {user.user ? (
                 <Container className="bookings__cards">
-                    {!loading ? (
-                        bookings.length > 0 ? (
-                            _.orderBy(
-                                bookings,
-                                [(booking) => booking.serviceBooked.startDate],
-                                ['asc']
-                            ).map((bookingData) => (
-                                <BookingCard
-                                    key={bookingData._id}
-                                    bookingData={bookingData}
-                                    setDeletedBookingID={setDeletedBookingID}
-                                />
-                            ))
-                        ) : (
-                            <Typography
-                                variant="h3"
-                                color="textSecondary"
-                                style={{ margin: '100px 0', textAlign: 'center' }}
-                            >
-                                You have no bookings! Go and grab your package.
-                            </Typography>
-                        )
+                    {loading ? (
+                        <Loading message="Loading your bookings..." />
+                    ) : error ? (
+                        <ErrorDisplay 
+                            error={error} 
+                            onRetry={retryLoadBookings}
+                            title="Failed to load bookings"
+                        />
+                    ) : bookings.length > 0 ? (
+                        _.orderBy(
+                            bookings,
+                            [(booking) => booking.serviceBooked?.startDate],
+                            ['asc']
+                        ).map((bookingData) => (
+                            <BookingCard
+                                key={bookingData._id}
+                                bookingData={bookingData}
+                                setDeletedBookingID={setDeletedBookingID}
+                            />
+                        ))
                     ) : (
-                        <Loading />
+                        <Typography
+                            variant="h5"
+                            color="textSecondary"
+                            style={{ 
+                                margin: '100px 0', 
+                                textAlign: 'center',
+                                padding: '2rem'
+                            }}
+                        >
+                            You have no bookings yet! Browse our packages to get started.
+                        </Typography>
                     )}
 
                     {advtData && (
@@ -83,17 +116,18 @@ function Bookings({ setIsModalOpen, advtData }) {
                             color="secondary"
                             size="large"
                             onClick={() => setIsModalOpen(true)}
+                            aria-label="Login to view bookings"
                         >
                             Login First
                         </Button>
                         <Typography variant="body2" color="textSecondary">
-                            Login to See Your Bookings.
+                            Login to see your bookings.
                         </Typography>
                     </div>
                 </div>
             )}
         </div>
-    )
+    );
 }
 
 export default Bookings

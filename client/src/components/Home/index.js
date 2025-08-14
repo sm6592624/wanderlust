@@ -10,6 +10,7 @@ import ClickAwayListener from '@material-ui/core/ClickAwayListener'
 import { v4 as uuid } from 'uuid'
 import NumberFormat from 'react-number-format'
 
+// Local components
 import ImageCarousel from './ImageCarousel'
 import ShowcaseCarousel from './ShowcaseCarousel'
 import WhyUs from './WhyUs'
@@ -17,7 +18,7 @@ import './Home.css'
 import Loading from '../../utils/Comp/Loading'
 import AdvtBanner from '../../utils/Comp/AdvtBanner'
 
-function Home({
+const Home = ({
     carouselData,
     servicesData,
     trendingServices,
@@ -25,20 +26,25 @@ function Home({
     setIsModalOpen,
     location,
     history,
-}) {
+}) => {
     const [searchInput, setSearchInput] = useState('')
     const [specials, setSpecials] = useState([])
 
-    // handling when redirected from the password update page *******************************************
-    let redirect = location.search && location.search.split('=')[1]
-    if (redirect === 'login') {
-        setIsModalOpen(true)
-        history.push('/user')
-    }
-
-    // handling SPECIALS *************************************************************************************************
+    // Check if user is redirected from password update page
     useEffect(() => {
-        setSpecials(servicesData.filter((service) => service.isSpecial))
+        let redirect = location.search && location.search.split('=')[1]
+        if (redirect === 'login') {
+            setIsModalOpen(true)
+            history.push('/user')
+        }
+    }, [location.search, setIsModalOpen, history])
+
+    // Filter special offers from services
+    useEffect(() => {
+        if (servicesData && servicesData.length > 0) {
+            const specialServices = servicesData.filter(service => service.isSpecial === true)
+            setSpecials(specialServices)
+        }
     }, [servicesData])
 
     return (

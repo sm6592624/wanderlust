@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Route, Redirect } from 'react-router-dom'
 import 'bootstrap/dist/css/bootstrap.min.css'
 
+// Component imports
 import Header from './components/Header'
 import Home from './components/Home'
 import Footer from './components/Footer'
@@ -10,6 +11,9 @@ import './App.css'
 import { AdminProvider } from './utils/Context/admin'
 import { UserProvider } from './utils/Context/user'
 import Other from './components/Other'
+import ErrorBoundary from './utils/Comp/ErrorBoundary'
+
+// API functions
 import {
     getServices,
     getTrending,
@@ -18,6 +22,8 @@ import {
     getDestinations,
     getPrices,
 } from './api/admin'
+
+// Other components
 import Bookings from './components/Bookings'
 import Individual from './components/Individual'
 import Forgot from './components/PasswordReset/Forgot'
@@ -25,6 +31,7 @@ import Update from './components/PasswordReset/Update'
 import CreateOwn from './components/CreateOwn'
 
 function App() {
+    // State for modal and data
     const [isModalOpen, setIsModalOpen] = useState(false)
     const [carousel, setCarousel] = useState([])
     const [services, setServices] = useState([])
@@ -33,70 +40,109 @@ function App() {
     const [destinations, setDestinations] = useState([])
     const [prices, setPrices] = useState({})
 
-    // handle fetching CAROUSELS *************************************************************************************
+    // Fetch carousel data from API
     const fetchCarousel = async () => {
-        let response = await getCarousel()
-        setCarousel(response.data)
+        try {
+            const response = await getCarousel();
+            if (response && response.data) {
+                setCarousel(response.data);
+            } else {
+                setCarousel([]);
+            }
+        } catch (err) {
+            console.error('Failed to fetch carousel:', err);
+            // Set empty array on error to prevent crashes
+            setCarousel([]);
+        }
     }
 
     useEffect(() => {
-        fetchCarousel().catch((err) => console.log(err.message))
+        fetchCarousel();
     }, [])
 
-    // handle fetching ALL SERVICES ***********************************************************************************
-    const fetchServices = async () => {
-        let response = await getServices()
-        setServices(response.data)
+    // Get all available services from the backend
+    const loadServices = async () => {
+        try {
+            const result = await getServices();
+            if (result && result.data) {
+                setServices(result.data);
+            }
+        } catch (error) {
+            console.error('Error loading services:', error);
+            setServices([]); // fallback to empty array
+        }
     }
 
+    // Load services on component mount
     useEffect(() => {
-        fetchServices().catch((err) => console.log(err.message))
+        loadServices();
     }, [])
 
-    // handle fetching TRENDING Destinations ****************************************************************************
-    const fetchTrending = async () => {
-        let response = await getTrending()
-        setTrending(response.data)
+    // Fetch trending destinations for homepage
+    const loadTrendingPlaces = async () => {
+        try {
+            const trendingData = await getTrending();
+            setTrending(trendingData.data || []);
+        } catch (error) {
+            console.error('Could not load trending destinations:', error);
+            setTrending([]);
+        }
     }
 
     useEffect(() => {
-        fetchTrending().catch((err) => console.log(err.message))
+        loadTrendingPlaces();
     }, [])
 
-    // handle fetching Advertisements ****************************************************************************
-    const fetchAdvt = async () => {
-        let response = await getAdvtBanner()
-        setAdvt(response.data)
+    // Load advertisement banners
+    const getAdvertisements = async () => {
+        try {
+            const advtResponse = await getAdvtBanner();
+            setAdvt(advtResponse.data || []);
+        } catch (err) {
+            console.error('Advertisement loading failed:', err);
+            setAdvt([]);
+        }
     }
 
     useEffect(() => {
-        fetchAdvt().catch((err) => console.log(err.message))
+        getAdvertisements();
     }, [])
 
-    // handle fetching CREATE OWN Destinations ******************************************************************
-    const fetchDestinations = async () => {
-        let response = await getDestinations()
-        setDestinations(response.data)
+    // Load destinations for "Create Your Own Trip" feature
+    const loadDestinationsList = async () => {
+        try {
+            const destinationsResponse = await getDestinations();
+            setDestinations(destinationsResponse.data || []);
+        } catch (error) {
+            console.error('Failed to load destinations:', error);
+            setDestinations([]);
+        }
     }
 
     useEffect(() => {
-        fetchDestinations().catch((err) => console.log(err.message))
+        loadDestinationsList();
     }, [])
 
-    // handle fetching CREATE OWN Prices ******************************************************************
-    const fetchPrices = async () => {
-        let response = await getPrices()
-        setPrices(response.data)
+    // Get pricing information for trip creation
+    const loadPricingData = async () => {
+        try {
+            const pricingResponse = await getPrices();
+            setPrices(pricingResponse.data || {});
+        } catch (error) {
+            console.error('Could not load pricing data:', error);
+            setPrices({});
+        }
     }
 
     useEffect(() => {
-        fetchPrices().catch((err) => console.log(err.message))
+        loadPricingData();
     }, [])
 
     return (
-        <Router>
-            {window.location.pathname === '/' && <Redirect to="/user" />}
-            <div className="app">
+        <ErrorBoundary title="Application Error">
+            <Router>
+                {window.location.pathname === '/' && <Redirect to="/user" />}
+                <div className="app">
                 <Route exact path="/admin">
                     <AdminProvider>
                         <Admin />
@@ -181,6 +227,7 @@ function App() {
                 </UserProvider>
             </div>
         </Router>
+        </ErrorBoundary>
     )
 }
 

@@ -1,3 +1,5 @@
+// Input validation functions
+
 const validateRegisterInputs = (
     firstName,
     lastName,
@@ -6,45 +8,58 @@ const validateRegisterInputs = (
     confirmPassword
 ) => {
     const errors = {}
+    const namePattern = /^([a-zA-Z\s]+)$/
 
-    const nameRegEx = /^([a-zA-Z\s]+)$/
-
-    if (firstName) {
-        if (firstName.trim() === '') errors.firstName = 'First name must not be empty!!!'
-        else if (firstName.trim().length > 30)
-            errors.firstName = 'First name exceeded the maximum characters limit!!!'
-        else if (!firstName.match(nameRegEx))
-            errors.firstName = "First name can't have numbers or special characters!!!"
-    } else errors.firstName = 'First name is a required field!!!'
-
-    if (lastName) {
-        if (lastName.trim().length > 30)
-            errors.lastName = 'Last name exceeded the maximum characters limit!!!'
-        else if (!lastName.match(nameRegEx))
-            errors.lastName = "Last name can't have numbers or special characters!!!"
+    // First name validation
+    if (!firstName) {
+        errors.firstName = 'First name is required'
+    } else if (firstName.trim() === '') {
+        errors.firstName = 'First name cannot be empty'
+    } else if (firstName.trim().length > 30) {
+        errors.firstName = 'First name is too long (max 30 characters)'
+    } else if (!firstName.match(namePattern)) {
+        errors.firstName = 'First name can only contain letters and spaces'
     }
 
-    if (email) {
-        if (email.trim() === '') errors.email = 'Email address must not be empty!!!'
-        else if (email.trim().length > 64) errors.email = 'Email address too long!!!'
-        else {
-            const regEx = /^([0-9a-zA-Z]([-.\w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9})$/
-            if (!email.match(regEx)) errors.email = 'Invalid email address!!!'
+    // Last name validation (optional field)
+    if (lastName) {
+        if (lastName.trim().length > 30) {
+            errors.lastName = 'Last name is too long (max 30 characters)'
+        } else if (!lastName.match(namePattern)) {
+            errors.lastName = 'Last name can only contain letters and spaces'
         }
-    } else errors.email = 'Email address is a required field!!!'
+    }
 
-    if (password && confirmPassword) {
-        if (password.trim() === '') errors.password = 'Password must not be empty!!!'
-        else if (password.trim() !== confirmPassword.trim())
-            errors.password = 'Passwords must match!!!'
-    } else errors.password = 'Both password fields are required!!!'
+    // Email validation
+    if (!email) {
+        errors.email = 'Email address is required'
+    } else if (email.trim() === '') {
+        errors.email = 'Email address cannot be empty'
+    } else if (email.trim().length > 64) {
+        errors.email = 'Email address is too long'
+    } else {
+        const emailPattern = /^([0-9a-zA-Z]([-.\w]*[0-9a-zA-Z])*@([0-9a-zA-Z][-\w]*[0-9a-zA-Z]\.)+[a-zA-Z]{2,9})$/
+        if (!email.match(emailPattern)) {
+            errors.email = 'Please enter a valid email address'
+        }
+    }
+
+    // Password validation
+    if (!password || !confirmPassword) {
+        errors.password = 'Both password fields are required'
+    } else if (password.trim() === '') {
+        errors.password = 'Password cannot be empty'
+    } else if (password.trim() !== confirmPassword.trim()) {
+        errors.password = 'Passwords do not match'
+    }
 
     return {
-        valid: Object.keys(errors).length > 0 ? false : true,
+        valid: Object.keys(errors).length === 0,
         errors,
     }
 }
 
+// Login validation
 const validateLoginInputs = (email, password) => {
     const errors = {}
 
