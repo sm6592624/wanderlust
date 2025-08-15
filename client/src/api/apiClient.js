@@ -1,8 +1,10 @@
 import axios from 'axios';
+import { SERVER_URL, REQUEST_TIMEOUT } from '../constants/urls';
 
 // Create axios instance with default config
 const apiClient = axios.create({
-  timeout: 10000, // 10 second timeout
+  baseURL: SERVER_URL,
+  timeout: REQUEST_TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
   },
